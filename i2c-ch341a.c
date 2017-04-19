@@ -65,9 +65,10 @@ static int ch341a_usb_i2c_command(struct i2c_adapter *adapter, u8 *cmd, u8 len)
 	return 0;
 }
 
-static int ch341a_usb_i2c_start(struct i2c_adapter *adapter)
+static int ch341a_usb_i2c_start(struct i2c_adapter *adapter, u8 addr)
 {
-	u8 I2C_CMD_START[] = {CH341A_CONTROL_I2C, CH341A_I2C_CMD_STA, CH341A_I2C_CMD_END};
+	u8 I2C_CMD_START[] = {CH341A_CONTROL_I2C, CH341A_I2C_CMD_STA, CH341A_I2C_CMD_OUT|1, 0, CH341A_I2C_CMD_END};
+	I2C_CMD_START[3] = addr;
 	print_hex_dump_bytes(__func__, DUMP_PREFIX_OFFSET, I2C_CMD_START, sizeof(I2C_CMD_START));
 	return ch341a_usb_i2c_command(adapter, I2C_CMD_START, sizeof(I2C_CMD_START));
 }
@@ -141,10 +142,7 @@ static int ch341a_usb_write_bytes(struct i2c_adapter *adapter, u8 addr, u16 len,
 {
 	int i = 0, ret;
 
-	ret = ch341a_usb_i2c_start(adapter);
-	if (ret != 0) return ret;
-
-	ret = ch341a_usb_i2c_write(adapter, 1, &addr);
+	ret = ch341a_usb_i2c_start(adapter, addr);
 	if (ret != 0) return ret;
 
 	for (i = 0; i < len; i += SEND_PAYLOAD_LENGTH) {
@@ -191,9 +189,7 @@ static int ch341a_usb_i2c_read_bytes(struct i2c_adapter *adapter, u8 addr, u16 l
 {
 	int i = 0, ret;
 
-	ret = ch341a_usb_i2c_start(adapter);
-	if (ret != 0) return ret;
-	ret = ch341a_usb_i2c_write(adapter, 1, &addr);
+	ret = ch341a_usb_i2c_start(adapter, addr);
 	if (ret != 0) return ret;
 
 	for (i = 0; i < len; i += RECV_PAYLOAD_LENGTH) {
