@@ -265,7 +265,7 @@ static ssize_t ch341a_attr_clock_show_freqs(struct device *dev,
 	return sprintf(buf, "100 400 750 1000\n");
 }
 
-static DEVICE_ATTR(clock_frequency, S_IWUSR | S_IRUGO,
+static DEVICE_ATTR(clock_frequency, S_IWUSR | S_IWGRP | S_IRUGO,
 			ch341a_attr_clock_show_value,
 			ch341a_attr_clock_store_value);
 static DEVICE_ATTR(clock_frequency_available, S_IRUGO,
