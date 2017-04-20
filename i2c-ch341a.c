@@ -11,7 +11,7 @@
  *
  */
 
-#define DEBUG 1
+//#define DEBUG 1
 
 #include <linux/device.h>
 #include <linux/kernel.h>
@@ -69,21 +69,27 @@ static int ch341a_usb_i2c_start(struct i2c_adapter *adapter, u8 addr)
 {
 	u8 I2C_CMD_START[] = {CH341A_CONTROL_I2C, CH341A_I2C_CMD_STA, CH341A_I2C_CMD_OUT|1, 0, CH341A_I2C_CMD_END};
 	I2C_CMD_START[3] = addr;
+#ifdef DEBUG
 	print_hex_dump_bytes(__func__, DUMP_PREFIX_OFFSET, I2C_CMD_START, sizeof(I2C_CMD_START));
+#endif
 	return ch341a_usb_i2c_command(adapter, I2C_CMD_START, sizeof(I2C_CMD_START));
 }
 
 static int ch341a_usb_i2c_stop(struct i2c_adapter *adapter)
 {
 	u8 I2C_CMD_STOP[] = {CH341A_CONTROL_I2C, CH341A_I2C_CMD_STO, CH341A_I2C_CMD_END};
+#ifdef DEBUG
 	print_hex_dump_bytes(__func__, DUMP_PREFIX_OFFSET, I2C_CMD_STOP, sizeof(I2C_CMD_STOP));
+#endif
 	return ch341a_usb_i2c_command(adapter, I2C_CMD_STOP, sizeof(I2C_CMD_STOP));
 }
 
 static int ch341a_usb_i2c_delay(struct i2c_adapter *adapter)
 {
 	u8 I2C_CMD_DELAY[] = {CH341A_CONTROL_I2C, CH341A_I2C_CMD_MS, CH341A_I2C_CMD_END};
+#ifdef DEBUG
 	print_hex_dump_bytes(__func__, DUMP_PREFIX_OFFSET, I2C_CMD_DELAY, sizeof(I2C_CMD_DELAY));
+#endif
 	return ch341a_usb_i2c_command(adapter, I2C_CMD_DELAY, sizeof(I2C_CMD_DELAY));
 }
 
@@ -113,8 +119,9 @@ static int ch341a_usb_i2c_set_speed(struct i2c_adapter *adapter, unsigned int da
 	ch341a_data->clock_speed = data;
 
 	I2C_CMD_SET[1] |= speed;
-
+#ifdef DEBUG
 	print_hex_dump_bytes(__func__, DUMP_PREFIX_OFFSET, I2C_CMD_SET, sizeof(I2C_CMD_SET));
+#endif
 	return ch341a_usb_i2c_command(adapter, I2C_CMD_SET, sizeof(I2C_CMD_SET));
 }
 
@@ -127,9 +134,9 @@ static int ch341a_usb_i2c_write(struct i2c_adapter *adapter, u8 len, u8 *data)
 	dev->out_buf[1] = CH341A_I2C_CMD_OUT | len;
 	memcpy(&dev->out_buf[2], data, len);
 	dev->out_buf[2+len] = CH341A_I2C_CMD_END;
-
+#ifdef DEBUG
 	print_hex_dump_bytes(__func__, DUMP_PREFIX_OFFSET, dev->out_buf, len+3);
-
+#endif
 	ret = usb_bulk_msg(dev->usb_dev,
 		usb_sndbulkpipe(dev->usb_dev, dev->ep_out),
 		dev->out_buf, len+3, &actual, TIMEOUT);
@@ -198,9 +205,9 @@ static int ch341a_usb_i2c_read_bytes(struct i2c_adapter *adapter, u8 addr, u16 l
 			&data[i]);
 		if (ret != 0) return ret;
 	}
-
+#ifdef DEBUG
 	print_hex_dump_bytes(__func__, DUMP_PREFIX_OFFSET, data, len);
-
+#endif
 	ret = ch341a_usb_i2c_stop(adapter);
 	if (ret != 0) return ret;
 	ch341a_usb_i2c_write(adapter, 1, &addr); //should give error so don't check here
